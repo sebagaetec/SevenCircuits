@@ -1,19 +1,13 @@
 /**
  ******************************************************************************
- * @file    lsm6ds3.c
+ * @file    pwm.c
  * @author  ELO301
  * @date    Dec 1, 2022
- * @brief   Driver for LSM6DS3 IMU sensor
+ * @brief   
  *
-<<<<<<< HEAD
- *
- * @note
- * @warning
-=======
  * 
  * @note    
  * @warning 
->>>>>>> 4ead727 (mas funciones)
  ******************************************************************************
  * @attention
  *
@@ -41,21 +35,14 @@
  */
 
 #include <stdlib.h>
-#include "lsm6ds3.h"
-#include "main.h"
-#include "i2c.h"
+#include "pwm.h"
 
 /*- PRIVATE_TUNABLES ---------------------------------------------------------*/
 
 /*- PRIVATE_Definitions ------------------------------------------------------*/
-#define TIMEOUT_100MS 100
 
 /*- PRIVATE_Macros -----------------------------------------------------------*/
-<<<<<<< HEAD
-extern I2C_HandleTypeDef hi2c2;
-=======
 
->>>>>>> 4ead727 (mas funciones)
 /*- PRIVATE_Types ------------------------------------------------------------*/
 
 /*- PRIVATE_Functions --------------------------------------------------------*/
@@ -66,61 +53,45 @@ extern I2C_HandleTypeDef hi2c2;
 /*
  * API: pwm_init
  */
-void lsm6ds3_init(void)
+void pwm_init(t_pwm *pwm, TIM_HandleTypeDef *tim, uint32_t channel, uint16_t counter_period_value)
 {
-  uint8_t who_am_i = 0;
-  HAL_StatusTypeDef status;
-
-  /* Test I2C interface by reading known value (WHO AM I) using HAL interface */
-<<<<<<< HEAD
-  status = HAL_I2C_Mem_Read(&hi2c2, LSM6DS3_I2C_ADDR << 1, LSM6DS3_WHO_AM_I, 1, &who_am_i, 1, TIMEOUT_100MS);
-  if (status != HAL_OK)
-  {
-    /* I2C error */
-    for(;;);
-  }
-  uint8_t ctrl1_xl = 0x60;
-  HAL_I2C_Mem_Write(&hi2c2, LSM6DS3_I2C_ADDR << 1, LSM6DS3_CTRL1_XL, 1, &ctrl1_xl, 1, TIMEOUT_100MS);
-  return;
+  pwm->tim = tim;
+  pwm->channel = channel;
+  pwm->counter_period_value = counter_period_value;
 }
 
-void lsm6ds3_read_accel(int16_t *ax, int16_t *ay, int16_t *az) {
-    uint8_t buffer[6];
-    HAL_I2C_Mem_Read(&hi2c2, LSM6DS3_I2C_ADDR << 1, 0x28, 1, buffer, 6, TIMEOUT_100MS);
-
-    // Convierte los datos a enteros de 16 bits
-    *ax = (buffer[1] << 8) | buffer[0];
-    *ay = (buffer[3] << 8) | buffer[2];
-    *az = (buffer[5] << 8) | buffer[4];
-}
-
-
-=======
-  status = HAL_I2C_Mem_Read(&hi2c1, LSM6DS3_I2C_ADDR, LSM6DS3_WHO_AM_I, 1, &who_am_i, 1, TIMEOUT_100MS);
-  if (status != HAL_OK)
-  {
-    /* I2C error */
-    Error_Handler();
-    return;
-  }
-}
-
->>>>>>> 4ead727 (mas funciones)
 /*
  * API: pwm_open
  */
-bool lsm6ds3_open(void)
+t_pwm_status pwm_open(t_pwm *pwm)
 {
-  return false;
+  /* Sanity check */
+  if (pwm->tim == NULL)
+  {
+    return PWM_OPEN_FAILURE;
+  }
+
+  /* Init variables */
+
+  /* Start peripherals */
+  HAL_TIM_PWM_Start(pwm->tim, pwm->channel);
+
+  return PWM_SUCCESS;
 }
 
-bool lsm6ds3_update(void)
+t_pwm_status pwm_update(t_pwm *pwm, uint8_t rate)
 {
-  return false;
+  uint16_t pwm_value;
+
+  if (rate > 100)
+  {
+    return PWM_UPDATE_FAILURE;
+  }
+
+  pwm_value = ((uint32_t)rate * pwm->counter_period_value) / 100UL;
+  __HAL_TIM_SET_COMPARE(pwm->tim, pwm->channel, pwm_value);
+
+  return PWM_SUCCESS;
 }
 
 /*- PRIVATE_Functions --------------------------------------------------------*/
-<<<<<<< HEAD
-
-=======
->>>>>>> 4ead727 (mas funciones)

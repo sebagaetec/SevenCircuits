@@ -84,6 +84,7 @@ static void MX_I2C2_Init(void)
 
 }
 
+<<<<<<< HEAD
 void mostrar_datos_pantalla(float ax_g, float ay_g, float az_g) {
     char display_buffer[32];
 
@@ -97,6 +98,93 @@ void mostrar_datos_pantalla(float ax_g, float ay_g, float az_g) {
     BSP_LCD_DisplayStringAt(10, 50, (uint8_t*)display_buffer, LEFT_MODE);
 }
 
+=======
+void display_acce_xyz(int16_t ax, int16_t ay, int16_t az, int16_t gx, int16_t gy, int16_t gz){
+	char displayText[30];
+
+	GUI_Clear();  // Limpia la pantalla
+	    // Convertir y mostrar el valor de cada eje en la pantalla
+
+	sprintf(displayText, "Ace X: %d", ax/1000);
+	GUI_DispStringAt(displayText, 10, 20);
+
+	sprintf(displayText, "Ace Y: %d", ay/1000);
+	GUI_DispStringAt(displayText, 10, 40);
+
+	    sprintf(displayText, "Ace Z: %d", az/1000);
+	    GUI_DispStringAt(displayText, 10, 60);
+
+	    // Mostrar los datos del giroscopio
+	            sprintf(displayText, "Gyro X: %d", gx);
+	            //GUI_DispStringAt(displayText, 10, 100);
+	            sprintf(displayText, "Gyro Y: %d", gy);
+	            //GUI_DispStringAt(displayText, 10, 120);
+	            sprintf(displayText, "Gyro Z: %d", gz);
+	            //GUI_DispStringAt(displayText, 10, 140);
+}
+
+void display_bar_xyz(int16_t ax, int16_t ay, int16_t az) {
+    char displayText[30];
+
+    int16_t xBarLength = (ax / 256) + 50;  // Escalamos y centramos (50 es punto medio)
+    int16_t yBarLength = (ay / 256) + 50;
+    int16_t zBarLength = (az / 256) + 50;
+
+    GUI_Clear();  // Limpia la pantalla
+
+    GUI_SetColor(GUI_RED);    // Rojo para el eje X
+    GUI_FillRect(10, 20, 10 + xBarLength, 40);
+     sprintf(displayText, "X: %d", ax/1000);
+        GUI_DispStringAt(displayText, 120, 25);
+
+        GUI_SetColor(GUI_GREEN);  // Verde para el eje Y
+        GUI_FillRect(10, 50, 10 + yBarLength, 70);
+        sprintf(displayText, "Y: %d", ay/1000);
+        GUI_DispStringAt(displayText, 120, 55);
+
+        GUI_SetColor(GUI_BLUE);   // Azul para el eje Z
+        GUI_FillRect(10, 80, 10 + zBarLength, 100);
+        sprintf(displayText, "Z: %d", az/1000);
+        GUI_DispStringAt(displayText, 120, 85);
+
+}
+
+void display_arrow(int16_t x, int16_t z) {
+    int16_t centerX = 120;  // Coordenada X del centro de la pantalla
+    int16_t centerY = 80;   // Coordenada Y del centro de la pantalla
+    int16_t arrowX, arrowY;
+
+    // Mapea los valores de aceleración a desplazamientos en pantalla
+    arrowX = centerX + (x / 512);  // Escala y centra el valor de X
+    arrowY = centerY - (z / 512);  // Escala y centra el valor de Z (inversión para sentido Y)
+
+    // Limita la posición de la flecha dentro de los bordes de la pantalla
+    if (arrowX < 10) arrowX = 10;
+    if (arrowX > 230) arrowX = 230;
+    if (arrowY < 10) arrowY = 10;
+    if (arrowY > 150) arrowY = 150;
+
+    // Limpia la pantalla para actualizar la flecha
+    GUI_Clear();
+
+    // Dibuja el fondo de referencia (opcional)
+    GUI_SetColor(GUI_LIGHTGRAY);
+    GUI_DrawLine(centerX, 10, centerX, 150);  // Línea vertical
+    GUI_DrawLine(10, centerY, 230, centerY);  // Línea horizontal
+
+    // Dibuja la flecha
+    GUI_SetColor(GUI_RED);  // Flecha de color rojo
+    GUI_DrawLine(centerX, centerY, arrowX, arrowY);  // Línea del centro al punto final
+    GUI_FillCircle(arrowX, arrowY, 3);  // Punta de la flecha
+
+    // Opcional: Muestra las coordenadas actuales
+    char displayText[30];
+    sprintf(displayText, "X: %d, Z: %d", x, z);
+    GUI_DispStringAt(displayText, 10, 160);
+}
+
+
+>>>>>>> 4ead727 (mas funciones)
 /**
   * @brief  Main program
   * @param  None
@@ -172,6 +260,7 @@ int main(void)
 
   MainTask();
 
+<<<<<<< HEAD
   int16_t ax, ay, az;
   while (1) {
   lsm6ds3_read_accel(&ax, &ay, &az);
@@ -186,6 +275,25 @@ int main(void)
 
   HAL_Delay(100);  // Actualiza cada 100 ms
   }
+=======
+  int16_t gx, gy, gz, ax, ay,az;
+
+   while (1) {
+          // Leer los datos del acelerómetro
+	   lsm6ds3_read_accel(&ax, &ay, &az);
+
+	   lsm6ds3_read_gyro(&gx, &gy, &gz);
+          // Mostrar los datos en la pantalla
+
+   //display_acce_xyz(ax, ay, az, gx, gy, gz);
+
+   //display_bar_xyz(ax, ay, az);
+
+   display_arrow(ax, az);
+
+   HAL_Delay(500);  // Espera antes de actualizar los datos
+   }
+>>>>>>> 4ead727 (mas funciones)
 
   /* Infinite loop */
   for(;;);

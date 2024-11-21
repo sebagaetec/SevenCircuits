@@ -1,19 +1,13 @@
 /**
  ******************************************************************************
- * @file    lsm6ds3.c
+ * @file    adc_if.c
  * @author  ELO301
- * @date    Dec 1, 2022
- * @brief   Driver for LSM6DS3 IMU sensor
+ * @date    Nov 28, 2022
+ * @brief   
  *
-<<<<<<< HEAD
- *
- * @note
- * @warning
-=======
  * 
  * @note    
  * @warning 
->>>>>>> 4ead727 (mas funciones)
  ******************************************************************************
  * @attention
  *
@@ -41,21 +35,16 @@
  */
 
 #include <stdlib.h>
-#include "lsm6ds3.h"
-#include "main.h"
-#include "i2c.h"
+#include "adc_if.h"
 
 /*- PRIVATE_TUNABLES ---------------------------------------------------------*/
+#define ADC_TIMEOUT_MS  100
 
 /*- PRIVATE_Definitions ------------------------------------------------------*/
-#define TIMEOUT_100MS 100
+#define ADC_FULL_RANGE_VALUE  4096UL
 
 /*- PRIVATE_Macros -----------------------------------------------------------*/
-<<<<<<< HEAD
-extern I2C_HandleTypeDef hi2c2;
-=======
 
->>>>>>> 4ead727 (mas funciones)
 /*- PRIVATE_Types ------------------------------------------------------------*/
 
 /*- PRIVATE_Functions --------------------------------------------------------*/
@@ -64,63 +53,69 @@ extern I2C_HandleTypeDef hi2c2;
 
 /*- PUBLIC_API ---------------------------------------------------------------*/
 /*
- * API: pwm_init
+ * API: adc_if_init
  */
-void lsm6ds3_init(void)
+void adc_if_init(t_adc_if *adc_if, ADC_HandleTypeDef *hadc)
 {
-  uint8_t who_am_i = 0;
-  HAL_StatusTypeDef status;
-
-  /* Test I2C interface by reading known value (WHO AM I) using HAL interface */
-<<<<<<< HEAD
-  status = HAL_I2C_Mem_Read(&hi2c2, LSM6DS3_I2C_ADDR << 1, LSM6DS3_WHO_AM_I, 1, &who_am_i, 1, TIMEOUT_100MS);
-  if (status != HAL_OK)
-  {
-    /* I2C error */
-    for(;;);
-  }
-  uint8_t ctrl1_xl = 0x60;
-  HAL_I2C_Mem_Write(&hi2c2, LSM6DS3_I2C_ADDR << 1, LSM6DS3_CTRL1_XL, 1, &ctrl1_xl, 1, TIMEOUT_100MS);
-  return;
+  adc_if->hadc = hadc;
 }
 
-void lsm6ds3_read_accel(int16_t *ax, int16_t *ay, int16_t *az) {
-    uint8_t buffer[6];
-    HAL_I2C_Mem_Read(&hi2c2, LSM6DS3_I2C_ADDR << 1, 0x28, 1, buffer, 6, TIMEOUT_100MS);
-
-    // Convierte los datos a enteros de 16 bits
-    *ax = (buffer[1] << 8) | buffer[0];
-    *ay = (buffer[3] << 8) | buffer[2];
-    *az = (buffer[5] << 8) | buffer[4];
-}
-
-
-=======
-  status = HAL_I2C_Mem_Read(&hi2c1, LSM6DS3_I2C_ADDR, LSM6DS3_WHO_AM_I, 1, &who_am_i, 1, TIMEOUT_100MS);
-  if (status != HAL_OK)
-  {
-    /* I2C error */
-    Error_Handler();
-    return;
-  }
-}
-
->>>>>>> 4ead727 (mas funciones)
 /*
- * API: pwm_open
+ * API: adc_if_open
  */
-bool lsm6ds3_open(void)
+t_adc_if_status adc_if_open(t_adc_if *adc_if)
 {
-  return false;
+  /* Sanity check */
+  if (adc_if->hadc == NULL)
+  {
+    return ADC_IF_OPEN_FAILURE;
+  }
+
+  /* Init variables */
+
+  /* Start peripherals */
+
+  return ADC_IF_SUCCESS;
 }
 
-bool lsm6ds3_update(void)
+/*
+ * API: adc_if_get_value
+ */
+t_adc_if_status adc_if_get_value(t_adc_if *adc_if, uint16_t *value)
 {
-  return false;
+  /* Start ADC convertion */
+  if (HAL_ADC_Start(adc_if->hadc) != HAL_OK)
+  {
+    return ADC_IF_GET_VALUE_FAILURE;
+  }
+  /* Wait until conversion finishes or times out*/
+  else if (HAL_ADC_PollForConversion(adc_if->hadc, ADC_TIMEOUT_MS) != HAL_OK)
+  {
+    return ADC_IF_GET_VALUE_FAILURE;
+  }
+
+  /* Get ADC converted value */
+  *value = HAL_ADC_GetValue(adc_if->hadc);
+
+  return ADC_IF_SUCCESS;
 }
+
+/*
+ * API: adc_if_get_rate
+ */
+t_adc_if_status adc_if_get_rate(t_adc_if *adc_if, uint8_t *rate)
+{
+  uint16_t value;
+
+  if (adc_if_get_value(adc_if, &value) != ADC_IF_SUCCESS)
+  {
+    return ADC_IF_GET_RATE_FAILURE;
+  }
+
+  *rate = ((uint32_t)value * 100UL) / ADC_FULL_RANGE_VALUE;
+
+  return ADC_IF_SUCCESS;
+}
+
 
 /*- PRIVATE_Functions --------------------------------------------------------*/
-<<<<<<< HEAD
-
-=======
->>>>>>> 4ead727 (mas funciones)

@@ -1,19 +1,13 @@
 /**
  ******************************************************************************
- * @file    lsm6ds3.c
+ * @file    gpio_if.c
  * @author  ELO301
- * @date    Dec 1, 2022
- * @brief   Driver for LSM6DS3 IMU sensor
+ * @date    Nov 24, 2022
+ * @brief   
  *
-<<<<<<< HEAD
- *
- * @note
- * @warning
-=======
  * 
  * @note    
  * @warning 
->>>>>>> 4ead727 (mas funciones)
  ******************************************************************************
  * @attention
  *
@@ -41,21 +35,14 @@
  */
 
 #include <stdlib.h>
-#include "lsm6ds3.h"
-#include "main.h"
-#include "i2c.h"
+#include "gpio_if.h"
 
 /*- PRIVATE_TUNABLES ---------------------------------------------------------*/
 
 /*- PRIVATE_Definitions ------------------------------------------------------*/
-#define TIMEOUT_100MS 100
 
 /*- PRIVATE_Macros -----------------------------------------------------------*/
-<<<<<<< HEAD
-extern I2C_HandleTypeDef hi2c2;
-=======
 
->>>>>>> 4ead727 (mas funciones)
 /*- PRIVATE_Types ------------------------------------------------------------*/
 
 /*- PRIVATE_Functions --------------------------------------------------------*/
@@ -64,63 +51,111 @@ extern I2C_HandleTypeDef hi2c2;
 
 /*- PUBLIC_API ---------------------------------------------------------------*/
 /*
- * API: pwm_init
+ * API: gpio_if_init
  */
-void lsm6ds3_init(void)
+void gpio_if_init( t_gpio_if *gpio_if, t_gpio_active active, t_gpio_pin *pin, t_gpio_state initial_state )
 {
-  uint8_t who_am_i = 0;
-  HAL_StatusTypeDef status;
-
-  /* Test I2C interface by reading known value (WHO AM I) using HAL interface */
-<<<<<<< HEAD
-  status = HAL_I2C_Mem_Read(&hi2c2, LSM6DS3_I2C_ADDR << 1, LSM6DS3_WHO_AM_I, 1, &who_am_i, 1, TIMEOUT_100MS);
-  if (status != HAL_OK)
-  {
-    /* I2C error */
-    for(;;);
-  }
-  uint8_t ctrl1_xl = 0x60;
-  HAL_I2C_Mem_Write(&hi2c2, LSM6DS3_I2C_ADDR << 1, LSM6DS3_CTRL1_XL, 1, &ctrl1_xl, 1, TIMEOUT_100MS);
-  return;
+  gpio_if->active = active;
+  gpio_if->pin = pin;
+  gpio_if->initial_state = initial_state;
 }
 
-void lsm6ds3_read_accel(int16_t *ax, int16_t *ay, int16_t *az) {
-    uint8_t buffer[6];
-    HAL_I2C_Mem_Read(&hi2c2, LSM6DS3_I2C_ADDR << 1, 0x28, 1, buffer, 6, TIMEOUT_100MS);
-
-    // Convierte los datos a enteros de 16 bits
-    *ax = (buffer[1] << 8) | buffer[0];
-    *ay = (buffer[3] << 8) | buffer[2];
-    *az = (buffer[5] << 8) | buffer[4];
-}
-
-
-=======
-  status = HAL_I2C_Mem_Read(&hi2c1, LSM6DS3_I2C_ADDR, LSM6DS3_WHO_AM_I, 1, &who_am_i, 1, TIMEOUT_100MS);
-  if (status != HAL_OK)
-  {
-    /* I2C error */
-    Error_Handler();
-    return;
-  }
-}
-
->>>>>>> 4ead727 (mas funciones)
 /*
- * API: pwm_open
+ * API: gpio_if_open
  */
-bool lsm6ds3_open(void)
+t_gpio_if_status gpio_if_open(t_gpio_if *gpio_if)
 {
-  return false;
+  /* Sanity check */
+  if (gpio_if->pin == NULL)
+  {
+    return GPIO_IF_OPEN_FAILURE;
+  }
+
+  /* Init variables */
+
+  /* Start peripherals */
+  if (gpio_if->initial_state == GPIO_IF_SET)
+  {
+    gpio_if_set(gpio_if);
+  }
+  else if (gpio_if->initial_state == GPIO_IF_CLEAR)
+  {
+    gpio_if_clear(gpio_if);
+  }
+  else
+  {
+    /* Nothing to do */
+  }
+
+  return GPIO_IF_SUCCESS;
 }
 
-bool lsm6ds3_update(void)
+/*
+ * API: gpio_if_set
+ */
+void gpio_if_set(t_gpio_if *gpio_if)
 {
-  return false;
+  if (gpio_if->active == ACTIVE_HIGH)
+  {
+    HAL_GPIO_WritePin(gpio_if->pin->port, gpio_if->pin->pin, GPIO_PIN_SET);
+  }
+  else
+  {
+    HAL_GPIO_WritePin(gpio_if->pin->port, gpio_if->pin->pin, GPIO_PIN_RESET);
+  }
 }
+
+/*
+ * API: gpio_if_clear
+ */
+void gpio_if_clear(t_gpio_if *gpio_if)
+{
+  if (gpio_if->active == ACTIVE_HIGH)
+  {
+    HAL_GPIO_WritePin(gpio_if->pin->port, gpio_if->pin->pin, GPIO_PIN_RESET);
+  }
+  else
+  {
+    HAL_GPIO_WritePin(gpio_if->pin->port, gpio_if->pin->pin, GPIO_PIN_SET);
+  }
+}
+
+/*
+ * API: gpio_if_toggle
+ */
+void gpio_if_toggle(t_gpio_if *gpio_if)
+{
+  HAL_GPIO_TogglePin(gpio_if->pin->port, gpio_if->pin->pin);
+}
+
+/*
+ * API: gpio_if_get
+ */
+t_gpio_state gpio_if_get(t_gpio_if *gpio_if)
+{
+  if (gpio_if->active == ACTIVE_HIGH)
+  {
+    if (HAL_GPIO_ReadPin(gpio_if->pin->port, gpio_if->pin->pin) == GPIO_PIN_SET)
+    {
+      return GPIO_IF_SET;
+    }
+    else
+    {
+      return GPIO_IF_CLEAR;
+    }
+  }
+  else
+  {
+    if (HAL_GPIO_ReadPin(gpio_if->pin->port, gpio_if->pin->pin) == GPIO_PIN_SET)
+    {
+      return GPIO_IF_CLEAR;
+    }
+    else
+    {
+      return GPIO_IF_SET;
+    }
+  }
+}
+
 
 /*- PRIVATE_Functions --------------------------------------------------------*/
-<<<<<<< HEAD
-
-=======
->>>>>>> 4ead727 (mas funciones)
