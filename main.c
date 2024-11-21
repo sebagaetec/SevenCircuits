@@ -84,21 +84,6 @@ static void MX_I2C2_Init(void)
 
 }
 
-<<<<<<< HEAD
-void mostrar_datos_pantalla(float ax_g, float ay_g, float az_g) {
-    char display_buffer[32];
-
-    snprintf(display_buffer, sizeof(display_buffer), "AX: %.2f g", ax_g);
-    BSP_LCD_DisplayStringAt(10, 10, (uint8_t*)display_buffer, LEFT_MODE);
-
-    snprintf(display_buffer, sizeof(display_buffer), "AY: %.2f g", ay_g);
-    BSP_LCD_DisplayStringAt(10, 30, (uint8_t*)display_buffer, LEFT_MODE);
-
-    snprintf(display_buffer, sizeof(display_buffer), "AZ: %.2f g", az_g);
-    BSP_LCD_DisplayStringAt(10, 50, (uint8_t*)display_buffer, LEFT_MODE);
-}
-
-=======
 void display_acce_xyz(int16_t ax, int16_t ay, int16_t az, int16_t gx, int16_t gy, int16_t gz){
 	char displayText[30];
 
@@ -183,8 +168,16 @@ void display_arrow(int16_t x, int16_t z) {
     GUI_DispStringAt(displayText, 10, 160);
 }
 
+void display_debug_3d_plane(int16_t x, int16_t y) {
+	GUI_Clear();
+	GUI_SetColor(GUI_RED);
+	GUI_DrawLine(10, 10, 100, 100); // Línea diagonal
+	HAL_Delay(1000);
+}
 
->>>>>>> 4ead727 (mas funciones)
+
+
+
 /**
   * @brief  Main program
   * @param  None
@@ -260,22 +253,6 @@ int main(void)
 
   MainTask();
 
-<<<<<<< HEAD
-  int16_t ax, ay, az;
-  while (1) {
-  lsm6ds3_read_accel(&ax, &ay, &az);
-
-  // Convierte los datos a g si usas un rango de 2g
-  float ax_g = ax * 0.061;
-  float ay_g = ay * 0.061;
-  float az_g = az * 0.061;
-
-  // Muestra los datos en la pantalla
-  mostrar_datos_pantalla(ax_g, ay_g, az_g);
-
-  HAL_Delay(100);  // Actualiza cada 100 ms
-  }
-=======
   int16_t gx, gy, gz, ax, ay,az;
 
    while (1) {
@@ -287,13 +264,14 @@ int main(void)
 
    //display_acce_xyz(ax, ay, az, gx, gy, gz);
 
-   //display_bar_xyz(ax, ay, az);
+   display_bar_xyz(ax, ay, az);
 
-   display_arrow(ax, az);
+   //display_arrow(ax, az);
+
+	   //display_debug_3d_plane(ax,ay);
 
    HAL_Delay(500);  // Espera antes de actualizar los datos
    }
->>>>>>> 4ead727 (mas funciones)
 
   /* Infinite loop */
   for(;;);
